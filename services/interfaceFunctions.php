@@ -27,4 +27,7 @@
         throw new Exception('Unable to guess OS');
     }
 
-    
+    function getValidInterface($interface)
+    {
+        return (shell_exec('cat /sys/class/net/'.$interface.'/operstate') != NULL) ? true : false;
+    }
