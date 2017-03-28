@@ -16,3 +16,15 @@
         throw new Exception('Unable to guess OS');
     }
     
+    function getInterfaceSentBytes($interface)
+    {
+        if (isLinux()) {
+            $filepath = '/sys/class/net/%s/statistics/tx_bytes';
+            $output = file_get_contents(sprintf($filepath, $interface));
+
+            return $output;
+        }
+        throw new Exception('Unable to guess OS');
+    }
+
+    
