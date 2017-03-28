@@ -79,3 +79,26 @@
 
         return $traffic;
     }
+
+    function getDataPoints($start) {
+        if ($start != null)
+        {
+            unSet($_SESSION);
+            for ($i = 0; $i <= 3; $i++) {
+                $traffic = getBandwidthTraffic();
+            }
+            $dataPoint = array(
+                "down" => $traffic[0],
+                "up"   => $traffic[1]
+            );
+        } else {
+            $traffic = getBandwidthTraffic();
+            $downC = count($traffic[0]) -1;
+            $upC   = count($traffic[1]) -1;
+            $dataPoint = array(
+                "down" => $traffic[0][$downC],
+                "up"   => $traffic[1][$upC]
+            );
+        }
+        return $dataPoint;
+    }
