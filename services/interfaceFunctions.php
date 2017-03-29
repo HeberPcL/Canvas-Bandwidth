@@ -4,22 +4,22 @@
         $uname = explode(' ', php_uname());
         return $uname[0] === OS_LINUX;
     }
-    
+
     function getInterfaceReceivedBytes($interface)
     {
         if (isLinux()) {
-            $filepath = '/sys/class/net/%s/statistics/rx_bytes';
+            $filepath = '/sys/class/net/'.$interface.'/statistics/rx_bytes';
             $output = file_get_contents(sprintf($filepath, $interface));
 
             return $output;
         }
         throw new Exception('Unable to guess OS');
     }
-    
+
     function getInterfaceSentBytes($interface)
     {
         if (isLinux()) {
-            $filepath = '/sys/class/net/%s/statistics/tx_bytes';
+            $filepath = '/sys/class/net/'.$interface.'/statistics/tx_bytes';
             $output = file_get_contents(sprintf($filepath, $interface));
 
             return $output;
@@ -31,7 +31,6 @@
     {
         return (shell_exec('cat /sys/class/net/'.$interface.'/operstate') != NULL) ? true : false;
     }
-
 
     function getBandwidthTraffic($interface)
     {
@@ -61,6 +60,7 @@
         $round_tx = round($tbps/1024, 2);
 
         // Time
+        //$time = date("U")."000";
         $time = date("U")."000";
 
         // Array Values
@@ -80,24 +80,24 @@
         return $traffic;
     }
 
-    function getDataPoints($start) {
+    function getDataPoints($start, $interface) {
         if ($start != null)
         {
             unSet($_SESSION);
             for ($i = 0; $i <= 3; $i++) {
-                $traffic = getBandwidthTraffic();
+                $traffic = getBandwidthTraffic($interface);
             }
             $dataPoint = array(
                 "down" => $traffic[0],
                 "up"   => $traffic[1]
             );
         } else {
-            $traffic = getBandwidthTraffic();
+            $traffic = getBandwidthTraffic($interface);
             $downC = count($traffic[0]) -1;
             $upC   = count($traffic[1]) -1;
             $dataPoint = array(
-                "down" => $traffic[0][$downC],
-                "up"   => $traffic[1][$upC]
+                "down" => array($traffic[0][$downC]),
+                "up"   => array($traffic[1][$upC])
             );
         }
         return $dataPoint;
