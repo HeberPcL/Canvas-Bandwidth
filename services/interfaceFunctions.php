@@ -60,7 +60,6 @@
         $round_tx = round($tbps/1024, 2);
 
         // Time
-        //$time = date("U")."000";
         $time = date("U")."000";
 
         // Array Values
@@ -86,12 +85,14 @@
             unSet($_SESSION);
             for ($i = 0; $i <= 3; $i++) {
                 $traffic = getBandwidthTraffic($interface);
+                $dataPoint = array(
+                    "down" => $traffic[0],
+                    "up"   => $traffic[1]
+                );
             }
-            $dataPoint = array(
-                "down" => $traffic[0],
-                "up"   => $traffic[1]
-            );
-        } else {
+        }
+        else
+        {
             $traffic = getBandwidthTraffic($interface);
             $downC = count($traffic[0]) -1;
             $upC   = count($traffic[1]) -1;
