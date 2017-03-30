@@ -56,8 +56,8 @@
         $tbps = $tx[1] - $tx[0];
 
         // Traffic Convert
-        $round_rx = round($rbps/1024, 2);
-        $round_tx = round($tbps/1024, 2);
+        $round_rx = round($rbps/1024, 2) / 100;
+        $round_tx = round($tbps/1024, 2) / 100;
 
         // Time
         $time = date("U")."000";
