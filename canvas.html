@@ -1,44 +1,126 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script type="text/javascript">
-    window.onload = function() {
-        var dataPoints = [];
-        var chart;
-        $.getJSON("services/datapoints.php?xstart=1&ystart=10&length=10&type=json", function(data) {  
-            $.each(data, function(key, value){
-                dataPoints.push({x: value[0], y: parseInt(value[1])});
-            });
-            chart = new CanvasJS.Chart("chartContainer",{
-                title:{
-                    text:"Live Chart with dataPoints from External JSON"
-                },
-                data: [{
-                    type: "line",
-                    dataPoints : dataPoints,
-                }]
-            });
-            chart.render();
-            updateChart();
-        });
-        function updateChart() {
-            $.getJSON("services/datapoints.php?xstart=" + (dataPoints.length + 1) + "&ystart=" + (dataPoints[dataPoints.length - 1].y) + "&length=1&type=json", function(data) {
-                $.each(data, function(key, value) {
-                    dataPoints.push({
-                        x: parseInt(value[0]),
-                        y: parseInt(value[1])
-                    });
-                });
-                chart.render();
-                setTimeout(function(){updateChart()}, 1000);
-            });
-        }
-    }
-    </script>
-    <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript" src="js/canvasjs-v1.9.8.min.js"></script>
+<script type="text/javascript">
+window.onload = function() {
+	var updateInterval = 5000;
+	var network = {
+		'title': 'PredialNet',		'interface': 'em2'	
+	};
+	var url = 'https://firewall/interface/';
+	var urlCustom = {
+		'start': (url + 'interface.php?interface='+ network['interface'] +'&start=1'),
+		'update': (url + 'interface.php?interface='+ network['interface'])
+	};
+	var bwDown		= null;
+	var bwUp		= null;
+	var dataPointsD = [];
+	var dataPointsU = [];
+	
+	var chart1;
+	$.getJSON(urlCustom['start'], function(data) {
+		var interfaceName = data.label;
+		$.each(data.data.down, function(key, value){
+			bwDown = value[1];
+			dataPointsD.push(
+				{x: value[0], y: parseInt(value[1])}
+			);
+		});
+
+		$.each(data.data.up, function(key, value){
+			bwUp = value[1];
+			dataPointsU.push(
+				{x: value[0], y: parseInt(value[1])}
+			);
+		});
+		
+		chart1 = new CanvasJS.Chart("chartContainer1",{
+			exportEnabled: true,
+			zoomEnabled: true,
+			title:{
+				text: network['title'] +' ['+ interfaceName + ']'
+			},
+			toolTip: {
+				shared: true
+			},
+			legend: {
+				verticalAlign: "top",
+				horizontalAlign: "center",
+				fontSize: 14,
+				fontWeight: "bold",
+				fontFamily: "calibri",
+				fontColor: "dimGrey"
+			},
+			axisY:{
+				suffix: ' mb/s'
+			},
+			axisX: {
+				//title: "updates every 5 secs",
+				valueFormatString:  "HH:mm:ss"
+			},
+			legend:{
+				cursor:"pointer",
+				itemclick : function(e) {
+					if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+						e.dataSeries.visible = false;
+					}
+					else {
+						e.dataSeries.visible = true;
+					}
+					chart1.render();
+				}
+			},
+			data: [
+				{
+					type: "splineArea",
+					xValueType: "dateTime",
+					showInLegend: true,
+					name: "Download",
+					dataPoints : dataPointsD
+				},
+				{
+					type: "splineArea",
+					yValueType: "dateTime",
+					showInLegend: true,
+					name: "Upload" ,
+					dataPoints : dataPointsU
+				}
+			]
+		});
+		updateLegend(bwDown, bwUp);
+		chart1.render();
+		updateChart();
+	});
+	var updateLegend = function(down, up) {
+		chart1.options.data[0].legendText = " Download  " + down + " mb/s";
+		chart1.options.data[1].legendText = " Upload  " + up + " mb/s";	
+	}
+	var updateChart = function() {
+		$.getJSON(urlCustom['update'], function(data) {
+			$.each(data.data.down, function(key, value){
+				bwDown = value[1];
+				dataPointsD.push(
+					{x: value[0], y: parseInt(value[1])}
+				);
+			});
+
+			$.each(data.data.up, function(key, value){
+				bwUp = value[1];
+				dataPointsU.push(
+					{x: value[0], y: parseInt(value[1])}
+				);
+			});
+			updateLegend(bwDown, bwUp);
+			chart1.render();
+			setTimeout(function(){updateChart()}, updateInterval);
+		});
+	}
+}
+</script>
+<script type="text/javascript" src="http://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
 </head>
 <body>
-    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<div id="chartContainer1" style="height: 300px; width: 50%;"></div>
 </body>
 </html>
