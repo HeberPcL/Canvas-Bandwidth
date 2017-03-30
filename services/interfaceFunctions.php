@@ -35,9 +35,6 @@
     function getBandwidthTraffic($interface)
     {
         $interface = ($interface) ? $interface : 'eth0';
-        if (!ctype_alnum($interface)) {
-            throw new RuntimeException('Invalid interface name. Must contain only alphabetic and numeric characters.');
-        }
         // Session & Define Values
         session_start();
         define('OS_LINUX', 'Linux');
